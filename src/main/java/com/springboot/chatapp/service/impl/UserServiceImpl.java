@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "username", userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
     }
 
     @Override
@@ -52,5 +52,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findByFullNameContaining(String fullName) {
         return userRepository.findByFullNameContaining(fullName);
+    }
+
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
     }
 }

@@ -19,4 +19,6 @@ public interface UserService {
     Boolean existsByEmail(String email);
 
     List<User> findByFullNameContaining(String fullName);
+    User save(User user);
+
 }

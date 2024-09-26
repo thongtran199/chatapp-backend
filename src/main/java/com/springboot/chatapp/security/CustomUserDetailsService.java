@@ -2,6 +2,8 @@ package com.springboot.chatapp.security;
 
 import com.springboot.chatapp.domain.entity.User;
 import com.springboot.chatapp.repository.UserRepository;
+import com.springboot.chatapp.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,24 +17,19 @@ import java.util.stream.Collectors;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
-
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    @Autowired
+    private UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-          User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                 .orElseThrow(() ->
-                         new UsernameNotFoundException("User not found with username or email: "+ usernameOrEmail));
+        User user = userService.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
 
         Set<GrantedAuthority> authorities = user
                 .getRoles()
                 .stream()
                 .map((role) -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toSet());
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(),
+        return new org.springframework.security.core.userdetails.User(user.getUsername(),
                 user.getPasswordHash(),
                 authorities);
     }
