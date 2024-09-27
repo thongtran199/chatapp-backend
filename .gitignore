@@ -4,6 +4,7 @@ out/
 output/
 **/build/
 target/
+.env
 
 **/gradle_build/
 *.iml
