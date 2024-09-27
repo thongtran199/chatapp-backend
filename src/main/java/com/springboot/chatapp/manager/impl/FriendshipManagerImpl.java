@@ -54,7 +54,7 @@ public class FriendshipManagerImpl implements FriendshipManager {
     @Transactional
     public void acceptFriendRequestAndNotification(Long requesterId, Long requestedUserId) {
         friendshipService.acceptFriendRequest(requesterId, requestedUserId);
-        Friendship friendship = friendshipService.findAcceptedFriendshipBetweenUsers(requesterId, requestedUserId);
+        Friendship friendship = friendshipService.findFriendshipByRequesterIdAndRequestedUserId(requesterId, requestedUserId);
         Notification notification = friendshipNotificationFactory.createNotificationHandler(NotificationType.FRIEND_REQUEST_ACCEPTED).save(friendship);
         User requestedUser = userService.findById(requestedUserId);
 

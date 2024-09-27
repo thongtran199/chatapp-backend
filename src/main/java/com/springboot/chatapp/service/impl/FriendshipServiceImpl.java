@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FriendshipServiceImpl implements FriendshipService {
@@ -41,18 +42,8 @@ public class FriendshipServiceImpl implements FriendshipService {
     }
 
     @Override
-    public List<Friendship> findAllAcceptedFriends(Long userId) {
-        return friendshipRepository.findAllAcceptedFriends(userId);
-    }
-
-    @Override
     public List<Friendship> findAllSentFriendRequests(Long userId) {
         return friendshipRepository.findAllSentFriendRequests(userId);
-    }
-
-    @Override
-    public List<Friendship> findAllDeclinedFriendRequests(Long userId) {
-        return friendshipRepository.findAllDeclinedFriendRequests(userId);
     }
 
     @Override
@@ -72,19 +63,25 @@ public class FriendshipServiceImpl implements FriendshipService {
     }
 
     @Override
-    public Friendship findAcceptedFriendshipBetweenUsers(Long requesterId, Long requestedUserId) {
-        return friendshipRepository.findAcceptedFriendshipBetweenUsers(requesterId, requestedUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Friendship", "requester_id and requested_user_id", requesterId + " and "+ requestedUserId));
-    }
-
-    @Override
-    public boolean existsById(Long friendshipId) {
-        return friendshipRepository.existsById(friendshipId);
-    }
-
-    @Override
     public List<Friendship> findAllFriendsByUserId(Long userId) {
         return friendshipRepository.findAllFriendsByUserId(userId);
+    }
+
+    @Override
+    public List<Friendship> findAllReceivedPendingFriendRequests(Long userId) {
+            return friendshipRepository.findAllReceivedPendingFriendRequests(userId);
+    }
+
+    @Override
+    public Optional<Friendship> getFriendshipBetweenUsers(Long userId1, Long userId2) {
+        return friendshipRepository.getFriendshipBetweenUsers(userId1, userId2);
+
+    }
+
+    @Override
+    public Friendship findFriendshipByRequesterIdAndRequestedUserId(Long requesterId, Long requestedUserId) {
+        return friendshipRepository.findFriendshipByRequesterIdAndRequestedUserId(requesterId, requestedUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Friendship", "requesterId and requestedUserId", requesterId +" " + requestedUserId));
     }
 
 

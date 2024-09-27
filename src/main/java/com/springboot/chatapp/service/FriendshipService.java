@@ -2,6 +2,7 @@ package com.springboot.chatapp.service;
 
 import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
 import com.springboot.chatapp.domain.entity.Friendship;
+import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -12,11 +13,7 @@ public interface FriendshipService {
 
     Friendship findById(Long friendshipId);
 
-    List<Friendship> findAllAcceptedFriends(Long userId);
-
     List<Friendship> findAllSentFriendRequests(Long userId);
-
-    List<Friendship> findAllDeclinedFriendRequests(Long userId);
 
     void cancelFriendRequest(Long requesterId, Long requestedUserId);
 
@@ -24,9 +21,11 @@ public interface FriendshipService {
 
     void declineFriendRequest(Long requesterId, Long requestedUserId);
 
-    Friendship findAcceptedFriendshipBetweenUsers(Long requesterId, Long requestedUserId);
-
-    boolean existsById(Long friendshipId);
-
     List<Friendship> findAllFriendsByUserId(Long userId);
+
+    List<Friendship> findAllReceivedPendingFriendRequests(Long userId);
+    Optional<Friendship> getFriendshipBetweenUsers(Long userId1, Long userId2);
+
+    Friendship findFriendshipByRequesterIdAndRequestedUserId(Long requesterId, Long requestedUserId);
+
 }

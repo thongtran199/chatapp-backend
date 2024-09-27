@@ -5,4 +5,6 @@ import com.springboot.chatapp.domain.dto.user.request.MessageRequestDTO;
 
 public interface MessageManager {
         void saveMessageAndNotification(MessageRequestDTO messageRequestDTO);
+
+
 }

@@ -1,6 +1,7 @@
 package com.springboot.chatapp.controller;
 
 import com.springboot.chatapp.domain.dto.user.request.MessageRequestDTO;
+import com.springboot.chatapp.domain.dto.user.response.MessageHistoryResponseDTO;
 import com.springboot.chatapp.domain.dto.user.response.MessageResponseDTO;
 import com.springboot.chatapp.domain.entity.Message;
 import com.springboot.chatapp.manager.MessageManager;
@@ -48,6 +49,13 @@ public class MessageController {
                 .map(messageMapper::mapToResponseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(messageResponseDTOs);
+    }
+
+    @GetMapping("/chat-history/{userId}")
+    public ResponseEntity<List<MessageHistoryResponseDTO>> getMessageHistory(
+            @PathVariable Long userId) {
+        List<MessageHistoryResponseDTO> messageHistoryResponseDTOS = messageService.getChatHistory(userId);
+        return ResponseEntity.ok(messageHistoryResponseDTOS);
     }
 
     @PostMapping("/mark-read/{messageId}")

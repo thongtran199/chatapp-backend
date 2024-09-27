@@ -5,6 +5,7 @@ import com.springboot.chatapp.domain.dto.user.response.FriendshipResponseDTO;
 import com.springboot.chatapp.domain.dto.user.response.UserResponseDTO;
 import com.springboot.chatapp.domain.entity.Friendship;
 import com.springboot.chatapp.domain.entity.User;
+import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
 import com.springboot.chatapp.manager.FriendshipManager;
 import com.springboot.chatapp.mapper.impl.FriendshipMapper;
 import com.springboot.chatapp.mapper.impl.UserMapper;
@@ -62,32 +63,24 @@ public class FriendshipController {
         return ResponseEntity.ok(responseDTOs);
     }
 
-    @GetMapping("/accepted/{userId}")
-    public ResponseEntity<List<FriendshipResponseDTO>> getAllAcceptedFriends(@PathVariable Long userId) {
-        List<Friendship> friendships = friendshipService.findAllAcceptedFriends(userId);
-        List<FriendshipResponseDTO> responseDTOs = friendships.stream()
-                .map(friendshipMapper::mapToResponseDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responseDTOs);
-    }
-
     @GetMapping("/sent/{userId}")
-    public ResponseEntity<List<FriendshipResponseDTO>> getAllSentFriendRequests(@PathVariable Long userId) {
+    public ResponseEntity<List<UserResponseDTO>> getAllSentFriendRequests(@PathVariable Long userId) {
         List<Friendship> friendships = friendshipService.findAllSentFriendRequests(userId);
-        List<FriendshipResponseDTO> responseDTOs = friendships.stream()
-                .map(friendshipMapper::mapToResponseDTO)
+        List<UserResponseDTO> responseDTOs = friendships.stream()
+                .map(friendship -> userMapper.mapToResponseDTO(friendship.getRequestedUser()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responseDTOs);
     }
 
-    @GetMapping("/declined/{userId}")
-    public ResponseEntity<List<FriendshipResponseDTO>> getAllDeclinedFriendRequests(@PathVariable Long userId) {
-        List<Friendship> friendships = friendshipService.findAllDeclinedFriendRequests(userId);
-        List<FriendshipResponseDTO> responseDTOs = friendships.stream()
-                .map(friendshipMapper::mapToResponseDTO)
+    @GetMapping("/received/{userId}")
+    public ResponseEntity<List<UserResponseDTO>> getAllReceivedPendingFriendRequests(@PathVariable Long userId) {
+        List<Friendship> friendships = friendshipService.findAllReceivedPendingFriendRequests(userId);
+        List<UserResponseDTO> responseDTOs = friendships.stream()
+                .map(friendship -> userMapper.mapToResponseDTO(friendship.getRequester()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responseDTOs);
     }
+
 
     @DeleteMapping("/cancel/{requesterId}/{requestedUserId}")
     public ResponseEntity<Void> cancelFriendRequest(
@@ -95,7 +88,4 @@ public class FriendshipController {
         friendshipService.cancelFriendRequest(requesterId, requestedUserId);
         return ResponseEntity.noContent().build();
     }
-
-
-
 }

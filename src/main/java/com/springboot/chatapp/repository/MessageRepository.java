@@ -18,5 +18,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     @Query("UPDATE Message m SET m.isRead = true WHERE m.messageId = :messageId")
     void markMessageAsRead(@Param("messageId") Long messageId);
 
+    @Query("SELECT CASE WHEN m.messageSender.userId = :userId THEN m.messageReceiver.userId ELSE m.messageSender.userId END " +
+            "FROM Message m " +
+            "WHERE m.messageSender.userId = :userId OR m.messageReceiver.userId = :userId " +
+            "GROUP BY CASE WHEN m.messageSender.userId = :userId THEN m.messageReceiver.userId ELSE m.messageSender.userId END")
+    List<Long> findConversationPartnerIds(@Param("userId") Long userId);
+
+    @Query("SELECT m FROM Message m " +
+            "WHERE ((m.messageSender.userId = :userId AND m.messageReceiver.userId = :partnerId) " +
+            "OR (m.messageSender.userId = :partnerId AND m.messageReceiver.userId = :userId)) " +
+            "ORDER BY m.sentAt DESC")
+    Message findLatestMessageBetweenUsers(@Param("userId") Long userId, @Param("partnerId") Long partnerId);
+
 
 }
