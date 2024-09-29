@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class MessageHistoryResponseDTO {
-    private Long userId;
+    private Long partnerId;
     private String avatarUrl;
     private LatestMessageHistoryResponseDTO latestMessage;
     private String fullName;

@@ -53,6 +53,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional
     public void deleteNotification(Long notificationId) {
         if (!notificationRepository.existsById(notificationId)) {
             throw new ResourceNotFoundException("Notification", "notificationId", notificationId);

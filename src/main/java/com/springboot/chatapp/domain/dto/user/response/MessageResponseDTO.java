@@ -11,5 +11,5 @@ public class MessageResponseDTO {
     private MessageUserResponseDTO messageReceiver;
     private String content;
     private boolean isRead;
-    private LocalDateTime createdAt;
+    private LocalDateTime sentAt;
 }

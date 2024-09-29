@@ -41,10 +41,10 @@ public class MessageController {
         return ResponseEntity.ok(messageResponseDTO);
     }
 
-    @GetMapping("/conversation/{senderId}/{receiverId}")
-    public ResponseEntity<List<MessageResponseDTO>> getMessagesBetweenUsers(
-            @PathVariable Long senderId, @PathVariable Long receiverId) {
-        List<Message> messages = messageService.findByMessageSenderAndReceiver(senderId, receiverId);
+    @GetMapping("/conversation/{userId1}/{userId2}")
+    public ResponseEntity<List<MessageResponseDTO>> getConversation(
+            @PathVariable Long userId1, @PathVariable Long userId2) {
+        List<Message> messages = messageService.findByMessageSenderAndReceiver(userId1, userId2);
         List<MessageResponseDTO> messageResponseDTOs = messages.stream()
                 .map(messageMapper::mapToResponseDTO)
                 .collect(Collectors.toList());

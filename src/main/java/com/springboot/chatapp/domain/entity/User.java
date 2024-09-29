@@ -56,10 +56,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications;
 
-    @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Friendship> initiatedFriendships;
 
-    @OneToMany(mappedBy = "requestedUser", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "requestedUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Friendship> receivedFriendships;
 
 }

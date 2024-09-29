@@ -6,15 +6,19 @@ import com.springboot.chatapp.domain.dto.user.response.UserResponseDTO;
 import com.springboot.chatapp.domain.dto.user.response.UserProfileDTO;
 import com.springboot.chatapp.domain.entity.Friendship;
 import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
 import com.springboot.chatapp.mapper.impl.UserMapper;
 import com.springboot.chatapp.service.FriendshipService;
 import com.springboot.chatapp.service.UserService;
 import com.springboot.chatapp.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Role;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -81,30 +85,25 @@ public class UserController {
         List<FoundUserResponseDTO> responseDTOs = users.stream()
                 .filter(user -> !user.getUserId().equals(userId))
                 .map(user -> {
-                    FoundUserResponseDTO dto = new FoundUserResponseDTO();
-                    dto.setUserId(user.getUserId());
-                    dto.setFullName(user.getFullName());
-                    dto.setUsername(user.getUsername());
-                    dto.setAvatarUrl(user.getAvatarUrl());
-                    Optional<Friendship> friendshipOptional = friendshipService.getFriendshipBetweenUsers(userId, user.getUserId());
-
-                    if (friendshipOptional.isPresent()) {
-                        Friendship friendship = friendshipOptional.get();
-                        dto.setRequesterId(
-                                FriendshipStatus.PENDING.equals(friendship.getStatus())
-                                ? friendship.getRequester().getUserId() : null);
-
-                        dto.setFriendshipStatus(friendship.getStatus());
-                    } else {
-                        dto.setRequesterId(null);
-                        dto.setFriendshipStatus(FriendshipStatus.NONE);
-                    }
-
-                    return dto;
+                    Optional<Friendship> latestFriendship = friendshipService
+                            .findLatestFriendshipBetweenUsers(userId, user.getUserId());
+                    return UserUtils.getFoundUserResponseDTOByUserAndFriendship(user, latestFriendship);
                 })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseDTOs);
     }
+
+    @GetMapping("/get-me")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<UserResponseDTO> getMeByJwt() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            User user = userService.findByUsername(((UserDetails) authentication.getPrincipal()).getUsername());
+            return ResponseEntity.ok(userMapper.mapToResponseDTO(user));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
 
 }

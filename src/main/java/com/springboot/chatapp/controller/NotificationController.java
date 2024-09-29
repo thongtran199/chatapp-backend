@@ -22,7 +22,6 @@ public class NotificationController {
     @Autowired
     private NotificationMapper notificationMapper;
 
-    // Lấy thông báo theo ID
     @GetMapping("/{notificationId}")
     public ResponseEntity<NotificationResponseDTO> getNotificationById(@PathVariable Long notificationId) {
         Notification notification = notificationService.findById(notificationId);
@@ -30,7 +29,6 @@ public class NotificationController {
         return ResponseEntity.ok(notificationResponseDTO);
     }
 
-    // Lấy tất cả thông báo của một user
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByUserId(@PathVariable Long userId) {
         List<Notification> notifications = notificationService.findByUserId(userId);
@@ -40,14 +38,12 @@ public class NotificationController {
         return ResponseEntity.ok(notificationResponseDTOs);
     }
 
-    // Đánh dấu thông báo đã đọc
     @PostMapping("/mark-read/{notificationId}")
     public ResponseEntity<Void> markNotificationAsRead(@PathVariable Long notificationId) {
         notificationService.markNotificationAsRead(notificationId);
         return ResponseEntity.ok().build();
     }
 
-    // Xóa thông báo
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long notificationId) {
         notificationService.deleteNotification(notificationId);

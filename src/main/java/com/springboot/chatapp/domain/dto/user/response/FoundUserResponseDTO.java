@@ -1,5 +1,6 @@
 package com.springboot.chatapp.domain.dto.user.response;
 
+import com.springboot.chatapp.domain.entity.Friendship;
 import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
 import lombok.Data;
 
@@ -11,6 +12,5 @@ public class FoundUserResponseDTO {
     private String fullName;
     private String username;
     private String avatarUrl;
-    private Long requesterId;
-    private FriendshipStatus friendshipStatus;
+    private FriendshipFoundUserResponseDTO friendshipFoundUserResponseDTO;
 }

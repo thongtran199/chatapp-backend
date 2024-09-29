@@ -10,25 +10,21 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-    @Query("SELECT m FROM Message m WHERE (m.messageSender.userId = :messageSenderId AND m.messageReceiver.userId = :messageReceiverId) OR (m.messageSender.userId = :messageReceiverId AND m.messageReceiver.userId = :messageSenderId)")
-    List<Message> findByMessageSenderAndReceiver(Long messageSenderId, Long messageReceiverId);
+    @Query("SELECT m FROM Message m WHERE (m.messageSender.userId = :userId1 AND m.messageReceiver.userId = :userId2) OR (m.messageSender.userId = :userId2 AND m.messageReceiver.userId = :userId1)")
+    List<Message> findByMessageSenderAndReceiver(Long userId1, Long userId2);
 
     @Transactional
     @Modifying
     @Query("UPDATE Message m SET m.isRead = true WHERE m.messageId = :messageId")
     void markMessageAsRead(@Param("messageId") Long messageId);
 
-    @Query("SELECT CASE WHEN m.messageSender.userId = :userId THEN m.messageReceiver.userId ELSE m.messageSender.userId END " +
-            "FROM Message m " +
-            "WHERE m.messageSender.userId = :userId OR m.messageReceiver.userId = :userId " +
-            "GROUP BY CASE WHEN m.messageSender.userId = :userId THEN m.messageReceiver.userId ELSE m.messageSender.userId END")
-    List<Long> findConversationPartnerIds(@Param("userId") Long userId);
-
-    @Query("SELECT m FROM Message m " +
-            "WHERE ((m.messageSender.userId = :userId AND m.messageReceiver.userId = :partnerId) " +
-            "OR (m.messageSender.userId = :partnerId AND m.messageReceiver.userId = :userId)) " +
-            "ORDER BY m.sentAt DESC")
-    Message findLatestMessageBetweenUsers(@Param("userId") Long userId, @Param("partnerId") Long partnerId);
+    @Query("SELECT m FROM Message m WHERE m.messageId IN (" +
+            "SELECT MAX(m1.messageId) FROM Message m1 WHERE m1.messageSender.id = :userId " +
+            "GROUP BY m1.messageReceiver.id " +
+            "UNION " +
+            "SELECT MAX(m2.messageId) FROM Message m2 WHERE m2.messageReceiver.id = :userId " +
+            "GROUP BY m2.messageSender.id)")
+    List<Message> findLatestMessagesByUserId(@Param("userId") Long userId);
 
 
 }

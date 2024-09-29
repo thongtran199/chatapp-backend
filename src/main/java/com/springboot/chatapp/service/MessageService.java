@@ -13,15 +13,13 @@ public interface MessageService {
 
     Message findById(Long messageId);
 
-    List<Message> findByMessageSenderAndReceiver(Long senderId, Long receiverId);
+    List<Message> findByMessageSenderAndReceiver(Long userId1, Long userId2);
 
     boolean existsById(Long messageId);
 
     void markMessageAsRead(Long messageId);
 
-    List<Long> findConversationPartnerIds(Long userId);
-
-    Message findLatestMessageBetweenUsers(Long userId,Long partnerId);
+    List<Message> findLatestMessagesByUserId(Long userId);
 
     List<MessageHistoryResponseDTO> getChatHistory(Long userId);
 

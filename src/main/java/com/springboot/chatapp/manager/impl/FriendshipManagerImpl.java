@@ -1,10 +1,14 @@
 package com.springboot.chatapp.manager.impl;
 
 import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
+import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
 import com.springboot.chatapp.domain.entity.Friendship;
 import com.springboot.chatapp.domain.entity.Notification;
 import com.springboot.chatapp.domain.entity.User;
+import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
 import com.springboot.chatapp.domain.enumerate.NotificationType;
+import com.springboot.chatapp.exception.AlreadyHaveFriendshipIsPendingException;
+import com.springboot.chatapp.exception.ChatAppAPIException;
 import com.springboot.chatapp.manager.FriendshipManager;
 import com.springboot.chatapp.manager.SocketManager;
 import com.springboot.chatapp.manager.factory.FriendshipNotificationFactory;
@@ -13,12 +17,16 @@ import com.springboot.chatapp.payload.notification.NewNotificationSocketDTO;
 import com.springboot.chatapp.service.FriendshipService;
 import com.springboot.chatapp.service.UserService;
 import com.springboot.chatapp.utils.NotificationUtils;
+import com.springboot.chatapp.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class FriendshipManagerImpl implements FriendshipManager {
@@ -42,7 +50,12 @@ public class FriendshipManagerImpl implements FriendshipManager {
     @Override
     @Transactional
     public void saveFriendRequestAndNotification(FriendshipRequestDTO friendshipRequestDTO) {
-        Friendship friendship = friendshipService.save(friendshipRequestDTO);
+        Optional<Friendship> friendshipOptional = friendshipService.findLatestFriendshipBetweenUsers(friendshipRequestDTO.getRequesterId(), friendshipRequestDTO.getRequestedUserId());
+        if(friendshipOptional.isPresent() && ( friendshipOptional.get().getStatus().equals(FriendshipStatus.PENDING) || friendshipOptional.get().getStatus().equals(FriendshipStatus.ACCEPTED)))
+        {
+            throw new AlreadyHaveFriendshipIsPendingException(friendshipRequestDTO);
+        }
+        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDTO);
         Notification notification = friendshipNotificationFactory.createNotificationHandler(NotificationType.FRIEND_REQUEST_RECEIVED).save(friendship);
         User requester = userService.findById(friendshipRequestDTO.getRequesterId());
 
@@ -52,29 +65,30 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
     @Override
     @Transactional
-    public void acceptFriendRequestAndNotification(Long requesterId, Long requestedUserId) {
-        friendshipService.acceptFriendRequest(requesterId, requestedUserId);
-        Friendship friendship = friendshipService.findFriendshipByRequesterIdAndRequestedUserId(requesterId, requestedUserId);
+    public void acceptFriendRequestAndNotification(Long friendshipId) {
+        friendshipService.acceptFriendRequest(friendshipId);
+        Friendship friendship = friendshipService.findById(friendshipId);
         Notification notification = friendshipNotificationFactory.createNotificationHandler(NotificationType.FRIEND_REQUEST_ACCEPTED).save(friendship);
-        User requestedUser = userService.findById(requestedUserId);
+        User requestedUser = userService.findById(friendship.getRequestedUser().getUserId());
 
         NewNotificationSocketDTO newNotificationSocketDTO = NotificationUtils.createNotificationSocketDTO(requestedUser, notification, requestedUser.getFullName());
-        socketManager.sendNotificationToUser(requesterId, newNotificationSocketDTO);
-
-
+        socketManager.sendNotificationToUser(friendship.getRequester().getUserId(), newNotificationSocketDTO);
     }
 
     @Override
-    public List<User> getAllFriends(Long userId) {
-        List<Friendship> friendships = friendshipService.findAllFriendsByUserId(userId);
-        List<User> friends = new ArrayList<>();
-        for (Friendship friendship : friendships) {
-            if (friendship.getRequester().getUserId().equals(userId)) {
-                friends.add(friendship.getRequestedUser());
-            } else if (friendship.getRequestedUser().getUserId().equals(userId)) {
-                friends.add(friendship.getRequester());
+    public List<FoundUserResponseDTO> findAcceptedFriendshipsByUserId(Long userId) {
+        List<Friendship> friendships = friendshipService.findAcceptedFriendshipsByUserId(userId);
+        return friendships.stream().map(friendship -> {
+            User user;
+            if(friendship.getRequester().getUserId().equals(userId))
+            {
+                user = friendship.getRequestedUser();
             }
-        }
-        return friends;
+            else{
+                user = friendship.getRequester();
+            }
+            return UserUtils.getFoundUserResponseDTOByUserAndFriendship(user, Optional.of(friendship));
+        }).collect(Collectors.toList());
     }
+
 }
