@@ -1,5 +1,6 @@
 package com.springboot.chatapp.manager.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springboot.chatapp.domain.dto.user.request.MessageRequestDTO;
 import com.springboot.chatapp.domain.entity.Message;
 import com.springboot.chatapp.domain.entity.Notification;
@@ -33,8 +34,10 @@ public class MessageManagerImpl implements MessageManager {
 
     @Override
     @Transactional
-    public void saveMessageAndNotification(MessageRequestDTO messageRequestDTO) {
+    public void saveMessageAndNotification(MessageRequestDTO messageRequestDTO) throws JsonProcessingException {
         Message message = messageService.save(messageRequestDTO);
+        User receiver = message.getMessageReceiver();
+
         NewNotificationDTO newNotificationDTO = new NewNotificationDTO(
                 message.getMessageReceiver().getUserId(),
                 NotificationType.MESSAGE,
@@ -44,6 +47,6 @@ public class MessageManagerImpl implements MessageManager {
         User sender = userService.findById(messageRequestDTO.getMessageSenderId());
 
         NewNotificationSocketDTO newNotificationSocketDTO = NotificationUtils.createNotificationSocketDTO(sender, notification, messageRequestDTO.getContent());
-        socketManager.sendNotificationToUser(messageRequestDTO.getMessageReceiverId(), newNotificationSocketDTO);
+        socketManager.sendMessageToUser(receiver.getUserId(), newNotificationSocketDTO);
     }
 }

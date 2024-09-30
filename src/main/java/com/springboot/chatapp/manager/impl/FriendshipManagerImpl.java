@@ -1,5 +1,6 @@
 package com.springboot.chatapp.manager.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
 import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
 import com.springboot.chatapp.domain.entity.Friendship;
@@ -8,7 +9,6 @@ import com.springboot.chatapp.domain.entity.User;
 import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
 import com.springboot.chatapp.domain.enumerate.NotificationType;
 import com.springboot.chatapp.exception.AlreadyHaveFriendshipIsPendingException;
-import com.springboot.chatapp.exception.ChatAppAPIException;
 import com.springboot.chatapp.manager.FriendshipManager;
 import com.springboot.chatapp.manager.SocketManager;
 import com.springboot.chatapp.manager.factory.FriendshipNotificationFactory;
@@ -20,10 +20,8 @@ import com.springboot.chatapp.utils.NotificationUtils;
 import com.springboot.chatapp.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -49,30 +47,32 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
     @Override
     @Transactional
-    public void saveFriendRequestAndNotification(FriendshipRequestDTO friendshipRequestDTO) {
+    public void sendFriendRequestAndNotification(FriendshipRequestDTO friendshipRequestDTO) throws JsonProcessingException {
         Optional<Friendship> friendshipOptional = friendshipService.findLatestFriendshipBetweenUsers(friendshipRequestDTO.getRequesterId(), friendshipRequestDTO.getRequestedUserId());
         if(friendshipOptional.isPresent() && ( friendshipOptional.get().getStatus().equals(FriendshipStatus.PENDING) || friendshipOptional.get().getStatus().equals(FriendshipStatus.ACCEPTED)))
         {
             throw new AlreadyHaveFriendshipIsPendingException(friendshipRequestDTO);
         }
         Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDTO);
+        User requestedUser = friendship.getRequestedUser();
         Notification notification = friendshipNotificationFactory.createNotificationHandler(NotificationType.FRIEND_REQUEST_RECEIVED).save(friendship);
         User requester = userService.findById(friendshipRequestDTO.getRequesterId());
 
         NewNotificationSocketDTO newNotificationSocketDTO = NotificationUtils.createNotificationSocketDTO(requester, notification, requester.getFullName());
-        socketManager.sendNotificationToUser(friendshipRequestDTO.getRequestedUserId(), newNotificationSocketDTO);
+        socketManager.sendNotificationToUser(requestedUser.getUserId(), newNotificationSocketDTO);
     }
 
     @Override
     @Transactional
-    public void acceptFriendRequestAndNotification(Long friendshipId) {
+    public void acceptFriendRequestAndNotification(Long friendshipId) throws JsonProcessingException {
         friendshipService.acceptFriendRequest(friendshipId);
         Friendship friendship = friendshipService.findById(friendshipId);
+        User requester = friendship.getRequester();
         Notification notification = friendshipNotificationFactory.createNotificationHandler(NotificationType.FRIEND_REQUEST_ACCEPTED).save(friendship);
         User requestedUser = userService.findById(friendship.getRequestedUser().getUserId());
 
         NewNotificationSocketDTO newNotificationSocketDTO = NotificationUtils.createNotificationSocketDTO(requestedUser, notification, requestedUser.getFullName());
-        socketManager.sendNotificationToUser(friendship.getRequester().getUserId(), newNotificationSocketDTO);
+        socketManager.sendNotificationToUser(requester.getUserId(), newNotificationSocketDTO);
     }
 
     @Override

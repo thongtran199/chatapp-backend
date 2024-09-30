@@ -19,4 +19,5 @@ public class NewNotificationSocketDTO {
         private String header;
         private String content;
         private String avatarUrl;
+        private Long partnerId;
 }

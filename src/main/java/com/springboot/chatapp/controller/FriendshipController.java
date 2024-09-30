@@ -1,5 +1,6 @@
 package com.springboot.chatapp.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
 import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
 import com.springboot.chatapp.domain.dto.user.response.FriendshipFoundUserResponseDTO;
@@ -8,6 +9,7 @@ import com.springboot.chatapp.domain.dto.user.response.UserResponseDTO;
 import com.springboot.chatapp.domain.entity.Friendship;
 import com.springboot.chatapp.domain.entity.User;
 import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
+import com.springboot.chatapp.exception.ChatAppAPIException;
 import com.springboot.chatapp.manager.FriendshipManager;
 import com.springboot.chatapp.mapper.impl.FriendshipMapper;
 import com.springboot.chatapp.mapper.impl.UserMapper;
@@ -43,15 +45,29 @@ public class FriendshipController {
 
     @PostMapping("/send-friend-request")
     public ResponseEntity<Void> sendFriendRequest(@RequestBody FriendshipRequestDTO friendshipRequestDTO) {
-        friendshipManager.saveFriendRequestAndNotification(friendshipRequestDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        try
+        {
+            friendshipManager.sendFriendRequestAndNotification(friendshipRequestDTO);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new ChatAppAPIException(HttpStatus.EXPECTATION_FAILED, "Can't process JSON of NotificationSocketDTO");
+        }
     }
 
     @PostMapping("/accept/{friendshipId}")
     public ResponseEntity<Void> acceptFriendRequest(
             @PathVariable Long friendshipId) {
-        friendshipManager.acceptFriendRequestAndNotification(friendshipId);
-        return ResponseEntity.ok().build();
+        try
+        {
+            friendshipManager.acceptFriendRequestAndNotification(friendshipId);
+            return ResponseEntity.ok().build();
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new ChatAppAPIException(HttpStatus.EXPECTATION_FAILED, "Can't process JSON of NotificationSocketDTO");
+        }
     }
 
     @PostMapping("/unfriend/{userId1}/{userId2}")

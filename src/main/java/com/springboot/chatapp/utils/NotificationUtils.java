@@ -18,6 +18,7 @@ public class NotificationUtils {
         newNotificationSocketDTO.setNotificationId(notification.getNotificationId());
         newNotificationSocketDTO.setSeen(notification.isSeen());
         newNotificationSocketDTO.setCreatedAt(notification.getCreatedAt());
+        newNotificationSocketDTO.setPartnerId(user.getUserId());
 
         NotificationType notificationType = notification.getType();
         if (notificationType == NotificationType.FRIEND_REQUEST_RECEIVED) {

@@ -1,15 +1,18 @@
 package com.springboot.chatapp.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springboot.chatapp.domain.dto.user.request.MessageRequestDTO;
 import com.springboot.chatapp.domain.dto.user.response.MessageHistoryResponseDTO;
 import com.springboot.chatapp.domain.dto.user.response.MessageResponseDTO;
 import com.springboot.chatapp.domain.entity.Message;
+import com.springboot.chatapp.exception.ChatAppAPIException;
 import com.springboot.chatapp.manager.MessageManager;
 import com.springboot.chatapp.mapper.impl.MessageMapper;
 import com.springboot.chatapp.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,11 +30,18 @@ public class MessageController {
     @Autowired
     private MessageMapper messageMapper;
 
-    // Gửi tin nhắn
     @PostMapping("/send")
     public ResponseEntity<Void> sendMessage(@RequestBody MessageRequestDTO messageRequestDTO) {
-        messageManager.saveMessageAndNotification(messageRequestDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        try
+        {
+            messageManager.saveMessageAndNotification(messageRequestDTO);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new ChatAppAPIException(HttpStatus.EXPECTATION_FAILED, "Can't process JSON of NotificationSocketDTO");
+        }
+
     }
 
     @GetMapping("/{messageId}")
