@@ -1,17 +1,27 @@
 version: "3.8"
 
 services:
-  mysqldb:
-    container_name: mysqldb
+  mysql-chatapp:
+    container_name: mysql-chatapp
     image: mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: employeedb
+      MYSQL_DATABASE: chatapp
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-chatapp-data:/var/lib/mysql
     networks:
-      springboot-mysql-net:
+      springboot-chatapp-network:
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$MYSQL_ROOT_PASSWORD"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  springboot-restful-webservices:
-    container_name: springboot-restful-webservices
+  springboot-chatapp:
+    container_name: springboot-chatapp
     build:
       context: ./
       dockerfile: Dockerfile
@@ -20,10 +30,14 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - mysqldb
+      mysql-chatapp:
+        condition: service_healthy
     networks:
-      springboot-mysql-net:
-    restart: on-failure
+      springboot-chatapp-network:
 
 networks:
-  springboot-mysql-net:
+  springboot-chatapp-network:
+    driver: bridge
+
+volumes:
+  mysql-chatapp-data:

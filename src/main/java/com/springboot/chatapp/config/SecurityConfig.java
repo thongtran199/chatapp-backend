@@ -68,14 +68,11 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) ->
-                        //authorize.anyRequest().authenticated()
-                        authorize.requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-//                                .requestMatchers(HttpMethod.GET, "/api/user/get-me").permitAll()
-                                // Uncomment these as needed:
-                                // .requestMatchers("/api/auth/**").permitAll()
-                                // .requestMatchers("/swagger-ui/**").permitAll()
-                                // .requestMatchers("/v3/api-docs/**").permitAll()
-                                .anyRequest().permitAll()
+                        authorize.requestMatchers(HttpMethod.GET, "/api/user/get-me").hasRole("USER")
+                                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
+                                .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-resources/**","/swagger-ui.html", "/webjars/**").permitAll()
+                                 .requestMatchers("/api/auth/**").permitAll()
+                                .anyRequest().authenticated()
                 ).exceptionHandling( exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                 ).sessionManagement( session -> session

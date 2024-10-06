@@ -8,6 +8,7 @@ import com.springboot.chatapp.model.entity.Notification;
 import com.springboot.chatapp.model.entity.User;
 import com.springboot.chatapp.model.enums.FriendshipStatus;
 import com.springboot.chatapp.model.enums.NotificationType;
+import com.springboot.chatapp.model.exception.ChatAppAPIException;
 import com.springboot.chatapp.service.manager.FriendshipManager;
 import com.springboot.chatapp.service.SocketService;
 import com.springboot.chatapp.service.manager.factory.FriendshipNotificationFactory;
@@ -17,6 +18,7 @@ import com.springboot.chatapp.service.UserService;
 import com.springboot.chatapp.utils.NotificationUtils;
 import com.springboot.chatapp.utils.UserUtils;
 import jakarta.transaction.Transactional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -48,7 +50,7 @@ public class FriendshipManagerImpl implements FriendshipManager {
         Optional<Friendship> friendshipOptional = friendshipService.findLatestFriendshipBetweenUsers(friendshipRequestDTO.getRequesterId(), friendshipRequestDTO.getRequestedUserId());
         if(friendshipOptional.isPresent() && ( friendshipOptional.get().getStatus().equals(FriendshipStatus.PENDING) || friendshipOptional.get().getStatus().equals(FriendshipStatus.ACCEPTED)))
         {
-            throw new AlreadyHaveFriendshipIsPendingException(friendshipRequestDTO);
+            throw new ChatAppAPIException(HttpStatus.BAD_REQUEST, "Already have pending friendship between users");
         }
         Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDTO);
         User requestedUser = friendship.getRequestedUser();
