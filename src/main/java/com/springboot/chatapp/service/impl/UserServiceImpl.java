@@ -1,20 +1,23 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.exception.ResourceNotFoundException;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.model.exception.ResourceNotFoundException;
 import com.springboot.chatapp.repository.UserRepository;
 import com.springboot.chatapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public User findByUsernameOrEmail(String username, String email) {

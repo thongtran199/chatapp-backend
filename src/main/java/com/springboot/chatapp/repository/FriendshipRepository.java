@@ -1,14 +1,11 @@
 package com.springboot.chatapp.repository;
 
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
+import com.springboot.chatapp.model.entity.Friendship;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 

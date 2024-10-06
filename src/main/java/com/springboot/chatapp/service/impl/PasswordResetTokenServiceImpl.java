@@ -1,28 +1,30 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.domain.dto.user.request.PasswordResetTokenRequestDTO;
-import com.springboot.chatapp.domain.entity.PasswordResetToken;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.exception.ResourceNotFoundException;
-import com.springboot.chatapp.payload.notification.NewPasswordResetTokenDTO;
+import com.springboot.chatapp.model.entity.PasswordResetToken;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.model.exception.ResourceNotFoundException;
+import com.springboot.chatapp.model.dto.passwordReset.NewPasswordResetTokenDto;
 import com.springboot.chatapp.repository.PasswordResetTokenRepository;
 import com.springboot.chatapp.service.PasswordResetTokenService;
 import com.springboot.chatapp.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 public class PasswordResetTokenServiceImpl implements PasswordResetTokenService {
 
-    @Autowired
-    private PasswordResetTokenRepository passwordResetTokenRepository;
-    @Autowired
-    private UserService userService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final UserService userService;
+
+    public PasswordResetTokenServiceImpl(
+            PasswordResetTokenRepository passwordResetTokenRepository,
+            UserService userService) {
+
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.userService = userService;
+    }
+
     @Override
-    public PasswordResetToken save(NewPasswordResetTokenDTO newPasswordResetTokenDTO) {
+    public PasswordResetToken save(NewPasswordResetTokenDto newPasswordResetTokenDTO) {
         PasswordResetToken token = new PasswordResetToken();
 
         User user = userService.findById(newPasswordResetTokenDTO.getUserId());

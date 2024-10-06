@@ -1,7 +1,6 @@
 package com.springboot.chatapp.security;
 
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.repository.UserRepository;
+import com.springboot.chatapp.model.entity.User;
 import com.springboot.chatapp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;

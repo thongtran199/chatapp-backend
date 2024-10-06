@@ -1,28 +1,19 @@
 package com.springboot.chatapp.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
-import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.FriendshipFoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.FriendshipResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.UserResponseDTO;
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
-import com.springboot.chatapp.exception.ChatAppAPIException;
-import com.springboot.chatapp.manager.FriendshipManager;
-import com.springboot.chatapp.mapper.impl.FriendshipMapper;
-import com.springboot.chatapp.mapper.impl.UserMapper;
+import com.springboot.chatapp.model.dto.friendship.FriendshipRequestDto;
+import com.springboot.chatapp.model.dto.user.SearchedUserResponseDto;
+import com.springboot.chatapp.model.entity.Friendship;
+import com.springboot.chatapp.model.exception.ChatAppAPIException;
+import com.springboot.chatapp.service.manager.FriendshipManager;
+import com.springboot.chatapp.utils.mapper.impl.FriendshipMapper;
+import com.springboot.chatapp.utils.mapper.impl.UserMapper;
 import com.springboot.chatapp.service.FriendshipService;
-import com.springboot.chatapp.utils.FriendshipUtils;
 import com.springboot.chatapp.utils.UserUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,43 +21,41 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/friendship")
 public class FriendshipController {
+    private final FriendshipService friendshipService;
+    private final FriendshipManager friendshipManager;
+    private final UserMapper userMapper;
+    private final FriendshipMapper friendshipMapper;
 
-    @Autowired
-    private FriendshipService friendshipService;
+    public FriendshipController(
+            FriendshipService friendshipService,
+            FriendshipManager friendshipManager,
+            UserMapper userMapper,
+            FriendshipMapper friendshipMapper) {
 
-    @Autowired
-    private FriendshipManager friendshipManager;
-
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private FriendshipMapper friendshipMapper;
+        this.friendshipService = friendshipService;
+        this.friendshipManager = friendshipManager;
+        this.userMapper = userMapper;
+        this.friendshipMapper = friendshipMapper;
+    }
 
     @PostMapping("/send-friend-request")
-    public ResponseEntity<Void> sendFriendRequest(@RequestBody FriendshipRequestDTO friendshipRequestDTO) {
-        try
-        {
+    public ResponseEntity<Void> sendFriendRequest(@RequestBody FriendshipRequestDto friendshipRequestDTO) {
+        try {
             friendshipManager.sendFriendRequestAndNotification(friendshipRequestDTO);
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
-        catch (JsonProcessingException e)
-        {
-            throw new ChatAppAPIException(HttpStatus.EXPECTATION_FAILED, "Can't process JSON of NotificationSocketDTO");
+        catch (JsonProcessingException e) {
+            throw new ChatAppAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't process JSON of NotificationSocketDTO");
         }
     }
 
     @PostMapping("/accept/{friendshipId}")
-    public ResponseEntity<Void> acceptFriendRequest(
-            @PathVariable Long friendshipId) {
-        try
-        {
+    public ResponseEntity<Void> acceptFriendRequest(@PathVariable Long friendshipId) {
+        try {
             friendshipManager.acceptFriendRequestAndNotification(friendshipId);
-            return ResponseEntity.ok().build();
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new ChatAppAPIException(HttpStatus.EXPECTATION_FAILED, "Can't process JSON of NotificationSocketDTO");
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            throw new ChatAppAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't process JSON of NotificationSocketDTO");
         }
     }
 
@@ -74,7 +63,7 @@ public class FriendshipController {
     public ResponseEntity<Void> unFriend(
             @PathVariable Long userId1, @PathVariable Long userId2) {
         friendshipService.unFriend(userId1, userId2);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
@@ -82,44 +71,45 @@ public class FriendshipController {
     public ResponseEntity<Void> declineFriendRequest(
             @PathVariable Long friendshipId) {
         friendshipService.declineFriendRequest(friendshipId);
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/revoke/{friendshipId}")
     public ResponseEntity<Void> revokeFriendRequest(
             @PathVariable Long friendshipId) {
         friendshipService.revokeFriendRequest(friendshipId);
-        return ResponseEntity.noContent().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/friends/{userId}")
-    public ResponseEntity<List<FoundUserResponseDTO>> getAcceptedFriendshipsByUserId(@PathVariable Long userId) {
-        List<FoundUserResponseDTO> foundUserResponseDTOS = friendshipManager.findAcceptedFriendshipsByUserId(userId);
-        return ResponseEntity.ok(foundUserResponseDTOS);
+    public ResponseEntity<List<SearchedUserResponseDto>> getAcceptedFriendshipsByUserId(@PathVariable Long userId) {
+        List<SearchedUserResponseDto> searchedUserResponseDtos = friendshipManager.findAcceptedFriendshipsByUserId(userId);
+        return ResponseEntity.ok(searchedUserResponseDtos);
     }
 
     @GetMapping("/sent/{userId}")
-    public ResponseEntity<List<FoundUserResponseDTO>> getAllSentFriendRequests(@PathVariable Long userId) {
+    public ResponseEntity<List<SearchedUserResponseDto>> getAllSentFriendRequests(@PathVariable Long userId) {
         List<Friendship> friendships = friendshipService.findPendingFriendshipsByRequesterId(userId);
-        List<FoundUserResponseDTO> foundUserResponseDTOS = friendships.stream()
+        List<SearchedUserResponseDto> searchedUserResponseDtos = friendships.stream()
                 .map(friendship -> {
                     Optional<Friendship> friendshipOptional = Optional.of(friendship);
-                    return UserUtils.getFoundUserResponseDTOByUserAndFriendship(friendship.getRequestedUser(), friendshipOptional);
+                    return UserUtils.getSearchedUserResponseDTOByUserAndFriendship(friendship.getRequestedUser(), friendshipOptional);
                 })
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(foundUserResponseDTOS);
+
+        return ResponseEntity.ok(searchedUserResponseDtos);
     }
 
     @GetMapping("/received/{userId}")
-    public ResponseEntity<List<FoundUserResponseDTO>> getAllReceivedPendingFriendRequests(@PathVariable Long userId) {
+    public ResponseEntity<List<SearchedUserResponseDto>> getAllReceivedPendingFriendRequests(@PathVariable Long userId) {
         List<Friendship> friendships = friendshipService.findAllReceivedPendingFriendRequests(userId);
-        List<FoundUserResponseDTO> foundUserResponseDTOS = friendships.stream()
+        List<SearchedUserResponseDto> searchedUserResponseDtos = friendships.stream()
                 .map(friendship -> {
                     Optional<Friendship> friendshipOptional = Optional.of(friendship);
-                    return UserUtils.getFoundUserResponseDTOByUserAndFriendship(friendship.getRequestedUser(), friendshipOptional);
+                    return UserUtils.getSearchedUserResponseDTOByUserAndFriendship(friendship.getRequestedUser(), friendshipOptional);
                 })
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(foundUserResponseDTOS);
+        return ResponseEntity.ok(searchedUserResponseDtos);
     }
 
 

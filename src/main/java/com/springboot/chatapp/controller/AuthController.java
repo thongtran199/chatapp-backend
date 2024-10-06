@@ -1,11 +1,12 @@
 package com.springboot.chatapp.controller;
 
-import com.springboot.chatapp.domain.dto.user.response.UserProfileDTO;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.payload.secutiry.*;
+import com.springboot.chatapp.model.dto.login.LoginRequestDto;
+import com.springboot.chatapp.model.dto.login.LoginResponseDto;
+import com.springboot.chatapp.model.dto.register.RegisterRequestDto;
+import com.springboot.chatapp.model.dto.register.RegisterResponseDto;
 import com.springboot.chatapp.repository.UserRepository;
 import com.springboot.chatapp.service.AuthService;
-import com.springboot.chatapp.utils.UserUtils;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private AuthService authService;
+    private final AuthService authService;
     private final UserRepository userRepository;
 
     public AuthController(AuthService authService,
@@ -27,14 +28,14 @@ public class AuthController {
     }
 
     @PostMapping(value = {"/login", "/signIn"})
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDto){
-        LoginResponseDTO loginResponseDTO = authService.login(loginRequestDto);
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto){
+        LoginResponseDto loginResponseDTO = authService.login(loginRequestDto);
         return ResponseEntity.ok(loginResponseDTO);
     }
 
     @PostMapping(value = {"/register", "/signUp"})
-    public ResponseEntity<RegisterResponseDTO> register(@RequestBody RegisterRequestDTO registerRequestDto){
-        RegisterResponseDTO registerResponseDTO =  authService.register(registerRequestDto);
+    public ResponseEntity<RegisterResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequestDto){
+        RegisterResponseDto registerResponseDTO =  authService.register(registerRequestDto);
         return new ResponseEntity<>(registerResponseDTO, HttpStatus.CREATED);
     }
 }

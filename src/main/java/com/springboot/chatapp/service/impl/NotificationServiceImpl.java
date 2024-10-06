@@ -1,13 +1,12 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.payload.notification.NewNotificationDTO;
-import com.springboot.chatapp.domain.entity.Notification;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.exception.ResourceNotFoundException;
+import com.springboot.chatapp.model.dto.notification.NotificationRequestDto;
+import com.springboot.chatapp.model.entity.Notification;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.model.exception.ResourceNotFoundException;
 import com.springboot.chatapp.repository.NotificationRepository;
 import com.springboot.chatapp.service.NotificationService;
 import com.springboot.chatapp.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,21 +15,26 @@ import java.util.List;
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
-    @Autowired
-    private NotificationRepository notificationRepository;
+    private final NotificationRepository notificationRepository;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    public NotificationServiceImpl(
+            NotificationRepository notificationRepository,
+            UserService userService) {
+
+        this.notificationRepository = notificationRepository;
+        this.userService = userService;
+    }
 
     @Override
-    public Notification save(NewNotificationDTO newNotificationDTO) {
+    public Notification save(NotificationRequestDto notificationRequestDTO) {
         Notification notification = new Notification();
 
-        User user = userService.findById(newNotificationDTO.getUserId());
+        User user = userService.findById(notificationRequestDTO.getUserId());
         notification.setUser(user);
 
-        notification.setType(newNotificationDTO.getType());
-        notification.setReferenceId(newNotificationDTO.getReferenceId());
+        notification.setType(notificationRequestDTO.getType());
+        notification.setReferenceId(notificationRequestDTO.getReferenceId());
         return notificationRepository.save(notification);
     }
 

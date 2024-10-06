@@ -1,7 +1,7 @@
 package com.springboot.chatapp.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import com.springboot.chatapp.domain.entity.PasswordResetToken;
+import com.springboot.chatapp.model.entity.PasswordResetToken;
 
 import java.util.Optional;
 

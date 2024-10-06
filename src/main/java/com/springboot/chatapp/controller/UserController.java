@@ -1,17 +1,16 @@
 package com.springboot.chatapp.controller;
 
 
-import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.UserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.UserProfileDTO;
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.mapper.impl.UserMapper;
+import com.springboot.chatapp.model.dto.user.SearchedUserResponseDto;
+import com.springboot.chatapp.model.dto.user.UserResponseDto;
+import com.springboot.chatapp.model.dto.user.UserProfileResponseDto;
+import com.springboot.chatapp.model.entity.Friendship;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.utils.mapper.impl.UserMapper;
 import com.springboot.chatapp.service.FriendshipService;
 import com.springboot.chatapp.service.UserService;
 import com.springboot.chatapp.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,42 +26,47 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/user")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final FriendshipService friendshipService;
 
-    @Autowired
-    private FriendshipService friendshipService;
+    public UserController(
+            UserService userService,
+            FriendshipService friendshipService) {
+
+        this.userService = userService;
+        this.friendshipService = friendshipService;
+    }
 
 
     @Autowired
     private UserMapper userMapper;
 
     @GetMapping("/username/{username}")
-    public ResponseEntity<UserResponseDTO> getUserByUsername(@PathVariable String username) {
+    public ResponseEntity<UserResponseDto> getUserByUsername(@PathVariable String username) {
         User user = userService.findByUsername(username);
-        UserResponseDTO userDTO = userMapper.mapToResponseDTO(user);
+        UserResponseDto userDTO = userMapper.mapToResponseDTO(user);
 
         return ResponseEntity.ok(userDTO);
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email) {
+    public ResponseEntity<UserResponseDto> getUserByEmail(@PathVariable String email) {
         User user = userService.findByEmail(email);
-        UserResponseDTO userDTO = userMapper.mapToResponseDTO(user);
+        UserResponseDto userDTO = userMapper.mapToResponseDTO(user);
         return ResponseEntity.ok(userDTO);
     }
 
     @GetMapping("/profile/{userId}")
-    public ResponseEntity<UserProfileDTO> getUserProfileById(@PathVariable Long userId) {
+    public ResponseEntity<UserProfileResponseDto> getUserProfileById(@PathVariable Long userId) {
         User user = userService.findById(userId);
-        UserProfileDTO userProfileDTO = UserUtils.mapToUserProfile(user);
-        return ResponseEntity.ok(userProfileDTO);
+        UserProfileResponseDto userProfileResponseDto = UserUtils.mapToUserProfile(user);
+        return ResponseEntity.ok(userProfileResponseDto);
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long userId) {
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long userId) {
         User user = userService.findById(userId);
-        UserResponseDTO userResponseDTO = userMapper.mapToResponseDTO(user);
+        UserResponseDto userResponseDTO = userMapper.mapToResponseDTO(user);
         return ResponseEntity.ok(userResponseDTO);
     }
 
@@ -80,14 +84,16 @@ public class UserController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<FoundUserResponseDTO>> searchByFullNameContaining(@RequestParam String fullName, @RequestParam Long userId) {
+    public ResponseEntity<List<SearchedUserResponseDto>> searchByFullNameContaining(@RequestParam String fullName,
+                                                                                    @RequestParam Long userId) {
         List<User> users = userService.findByFullNameContaining(fullName);
-        List<FoundUserResponseDTO> responseDTOs = users.stream()
+
+        List<SearchedUserResponseDto> responseDTOs = users.stream()
                 .filter(user -> !user.getUserId().equals(userId))
                 .map(user -> {
                     Optional<Friendship> latestFriendship = friendshipService
                             .findLatestFriendshipBetweenUsers(userId, user.getUserId());
-                    return UserUtils.getFoundUserResponseDTOByUserAndFriendship(user, latestFriendship);
+                    return UserUtils.getSearchedUserResponseDTOByUserAndFriendship(user, latestFriendship);
                 })
                 .collect(Collectors.toList());
 
@@ -96,7 +102,7 @@ public class UserController {
 
     @GetMapping("/get-me")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<UserResponseDTO> getMeByJwt() {
+    public ResponseEntity<UserResponseDto> getMeByJwt() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
             User user = userService.findByUsername(((UserDetails) authentication.getPrincipal()).getUsername());

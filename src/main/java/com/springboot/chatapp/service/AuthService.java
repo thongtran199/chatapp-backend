@@ -1,10 +1,12 @@
 package com.springboot.chatapp.service;
 
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.payload.secutiry.*;
+import com.springboot.chatapp.model.dto.login.LoginRequestDto;
+import com.springboot.chatapp.model.dto.login.LoginResponseDto;
+import com.springboot.chatapp.model.dto.register.RegisterRequestDto;
+import com.springboot.chatapp.model.dto.register.RegisterResponseDto;
 
 public interface AuthService {
-    LoginResponseDTO login(LoginRequestDTO loginRequestDto);
+    LoginResponseDto login(LoginRequestDto loginRequestDto);
 
-    RegisterResponseDTO register(RegisterRequestDTO registerRequestDto);
+    RegisterResponseDto register(RegisterRequestDto registerRequestDto);
 }

@@ -1,25 +1,26 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.domain.dto.user.request.RoleRequestDTO;
-import com.springboot.chatapp.domain.entity.Role;
-import com.springboot.chatapp.exception.ResourceNotFoundException;
+import com.springboot.chatapp.model.dto.role.RoleRequestDto;
+import com.springboot.chatapp.model.entity.Role;
+import com.springboot.chatapp.model.exception.ResourceNotFoundException;
 import com.springboot.chatapp.repository.RoleRepository;
 import com.springboot.chatapp.service.RoleService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RoleServiceImpl implements RoleService {
 
-    @Autowired
-    private RoleRepository roleRepository;
+
+    private final RoleRepository roleRepository;
+
+    public RoleServiceImpl(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
 
     @Override
-    public Role saveRole(RoleRequestDTO roleRequestDTO) {
+    public Role saveRole(RoleRequestDto roleRequestDTO) {
         Role role = new Role();
         role.setName(roleRequestDTO.getName());
         return roleRepository.save(role);

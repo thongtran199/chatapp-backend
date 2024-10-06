@@ -1,14 +1,18 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.domain.entity.Role;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.exception.ChatAppAPIException;
-import com.springboot.chatapp.payload.secutiry.*;
+import com.springboot.chatapp.model.dto.login.LoginRequestDto;
+import com.springboot.chatapp.model.dto.login.LoginResponseDto;
+import com.springboot.chatapp.model.dto.register.RegisterRequestDto;
+import com.springboot.chatapp.model.dto.register.RegisterResponseDto;
+import com.springboot.chatapp.model.entity.Role;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.model.exception.ChatAppAPIException;
 import com.springboot.chatapp.security.JwtTokenProvider;
 import com.springboot.chatapp.service.AuthService;
 import com.springboot.chatapp.service.RoleService;
 import com.springboot.chatapp.service.UserService;
 import com.springboot.chatapp.utils.UserUtils;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,11 +28,11 @@ import java.util.Set;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private AuthenticationManager authenticationManager;
-    private UserService userService;
-    private RoleService roleService;
-    private PasswordEncoder passwordEncoder;
-    private JwtTokenProvider jwtTokenProvider;
+    private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
@@ -44,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponseDTO login(LoginRequestDTO loginRequestDto) {
+    public LoginResponseDto login(LoginRequestDto loginRequestDto) {
 
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 loginRequestDto.getUsernameOrEmail(), loginRequestDto.getPassword()));
@@ -55,12 +59,12 @@ public class AuthServiceImpl implements AuthService {
 
         User user = userService.findByUsername(((UserDetails) authentication.getPrincipal()).getUsername());
 
-        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(token, UserUtils.mapToUserProfile(user));
+        LoginResponseDto loginResponseDTO = new LoginResponseDto(token, UserUtils.mapToUserProfile(user));
         return loginResponseDTO;
     }
 
     @Override
-    public RegisterResponseDTO register(RegisterRequestDTO registerRequestDto) {
+    public RegisterResponseDto register(RegisterRequestDto registerRequestDto) {
 
         if(userService.existsByUsername(registerRequestDto.getUsername())){
             throw new ChatAppAPIException(HttpStatus.BAD_REQUEST, "Username is already exists!.");
@@ -91,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtTokenProvider.generateToken(authentication);
 
-        RegisterResponseDTO registerResponseDTO = new RegisterResponseDTO(token, UserUtils.mapToUserProfile(savedUser));
+        RegisterResponseDto registerResponseDTO = new RegisterResponseDto(token, UserUtils.mapToUserProfile(savedUser));
 
         return registerResponseDTO;
     }

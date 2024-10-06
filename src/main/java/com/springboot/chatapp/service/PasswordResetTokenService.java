@@ -1,14 +1,10 @@
 package com.springboot.chatapp.service;
 
-import com.springboot.chatapp.domain.dto.user.request.PasswordResetTokenRequestDTO;
-import com.springboot.chatapp.domain.dto.user.response.PasswordResetTokenResponseDTO;
-import com.springboot.chatapp.domain.entity.PasswordResetToken;
-import com.springboot.chatapp.payload.notification.NewPasswordResetTokenDTO;
-
-import java.util.Optional;
+import com.springboot.chatapp.model.entity.PasswordResetToken;
+import com.springboot.chatapp.model.dto.passwordReset.NewPasswordResetTokenDto;
 
 public interface PasswordResetTokenService {
-    PasswordResetToken save(NewPasswordResetTokenDTO newPasswordResetTokenDTO);
+    PasswordResetToken save(NewPasswordResetTokenDto newPasswordResetTokenDTO);
 
     PasswordResetToken findById(Long tokenId);
 

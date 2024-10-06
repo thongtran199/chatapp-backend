@@ -1,6 +1,6 @@
 package com.springboot.chatapp.service;
 
-import com.springboot.chatapp.domain.entity.User;
+import com.springboot.chatapp.model.entity.User;
 
 import java.util.List;
 

@@ -1,17 +1,13 @@
 package com.springboot.chatapp.service;
 
-import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
-import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
-import org.springframework.data.repository.query.Param;
+import com.springboot.chatapp.model.dto.friendship.FriendshipRequestDto;
+import com.springboot.chatapp.model.entity.Friendship;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface FriendshipService {
-    Friendship sendFriendRequest(FriendshipRequestDTO friendshipRequestDTO);
+    Friendship sendFriendRequest(FriendshipRequestDto friendshipRequestDTO);
 
     Friendship findById(Long friendshipId);
 
@@ -30,6 +26,9 @@ public interface FriendshipService {
     Optional<Friendship> findLatestFriendshipBetweenUsers(Long user1, Long user2);
 
     List<Friendship> findAcceptedFriendshipsByUserId(Long userId);
+
+    void throwExceptionIfFriendshipIsNotPending(Friendship friendship);
+
 
 
 }

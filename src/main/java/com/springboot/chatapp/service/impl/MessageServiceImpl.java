@@ -1,20 +1,16 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.domain.dto.user.request.MessageRequestDTO;
-import com.springboot.chatapp.domain.dto.user.response.LatestMessageHistoryResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.MessageHistoryResponseDTO;
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.Message;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.exception.ResourceNotFoundException;
+import com.springboot.chatapp.model.dto.message.MessageRequestDto;
+import com.springboot.chatapp.model.dto.message.MessageHistoryResponseDto;
+import com.springboot.chatapp.model.entity.Friendship;
+import com.springboot.chatapp.model.entity.Message;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.model.exception.ResourceNotFoundException;
 import com.springboot.chatapp.repository.MessageRepository;
-import com.springboot.chatapp.repository.UserRepository;
 import com.springboot.chatapp.service.FriendshipService;
 import com.springboot.chatapp.service.MessageService;
 import com.springboot.chatapp.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.parameters.P;
+import com.springboot.chatapp.utils.MessageUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,20 +20,26 @@ import java.util.stream.Collectors;
 @Service
 public class MessageServiceImpl implements MessageService {
 
-    @Autowired
-    private MessageRepository messageRepository;
+    private final MessageRepository messageRepository;
+    private final UserService userService;
+    private final FriendshipService friendshipService;
 
-    @Autowired
-    private UserService userService;
+    public MessageServiceImpl(
+            MessageRepository messageRepository,
+            UserService userService,
+            FriendshipService friendshipService) {
 
-    @Autowired
-    private FriendshipService friendshipService;
+        this.messageRepository = messageRepository;
+        this.userService = userService;
+        this.friendshipService = friendshipService;
+    }
 
     @Override
-    public Message save(MessageRequestDTO messageRequestDTO) {
-        Message message = new Message();
+    public Message save(MessageRequestDto messageRequestDTO) {
         User messageSender = userService.findById(messageRequestDTO.getMessageSenderId());
         User messageReceiver = userService.findById(messageRequestDTO.getMessageReceiverId());
+
+        Message message = new Message();
         message.setMessageSender(messageSender);
         message.setMessageReceiver(messageReceiver);
         message.setContent(messageRequestDTO.getContent());
@@ -73,79 +75,33 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageHistoryResponseDTO> getChatHistory(Long userId) {
-
+    public List<MessageHistoryResponseDto> getChatHistory(Long userId) {
         List<Friendship> friendships = friendshipService.findAcceptedFriendshipsByUserId(userId);
-        List<MessageHistoryResponseDTO> messageHistoryResponseDTOS = new ArrayList<>();
-        for(Friendship friendship: friendships){
-            MessageHistoryResponseDTO messageHistoryResponseDTO = new MessageHistoryResponseDTO();
-            User user;
-            if(friendship.getRequester().getUserId() == userId)
-            {
-                user = friendship.getRequestedUser();
-            }
-            else {
-                user = friendship.getRequester();
-            }
-            messageHistoryResponseDTO.setPartnerId(user.getUserId());
-            messageHistoryResponseDTO.setUsername(user.getUsername());
-            messageHistoryResponseDTO.setAvatarUrl(user.getAvatarUrl());
-            messageHistoryResponseDTO.setFullName(user.getFullName());
-            messageHistoryResponseDTO.setLatestMessage(null);
-            messageHistoryResponseDTOS.add(messageHistoryResponseDTO);
-        }
+        Map<Long, MessageHistoryResponseDto> combinedMap = new HashMap<>();
+
+        friendships.forEach(friendship -> {
+            User user = userId.equals(friendship.getRequester().getUserId())
+                    ? friendship.getRequestedUser()
+                    : friendship.getRequester();
+
+            combinedMap.put(user.getUserId(), MessageUtils.createMessageHistoryResponseFromUserAndMessage(user, null));
+        });
 
         List<Message> messages = findLatestMessagesByUserId(userId);
-        List<MessageHistoryResponseDTO> messageHistoryResponseDTOS1 = messages.stream().map(message -> {
-            User user;
-            MessageHistoryResponseDTO messageHistoryResponseDTO = new MessageHistoryResponseDTO();
-            if(message.getMessageSender().getUserId() == userId)
-            {
-                user =  message.getMessageReceiver();
-            }
-            else
-            {
-                user = message.getMessageSender();
-            }
-            messageHistoryResponseDTO.setPartnerId(user.getUserId());
-            messageHistoryResponseDTO.setUsername(user.getUsername());
-            messageHistoryResponseDTO.setAvatarUrl(user.getAvatarUrl());
-            messageHistoryResponseDTO.setFullName(user.getFullName());
+        messages.forEach(message -> {
+            User user = userId.equals(message.getMessageSender().getUserId())
+                    ? message.getMessageReceiver()
+                    : message.getMessageSender();
 
-            LatestMessageHistoryResponseDTO latestMessageHistoryResponseDTO = new LatestMessageHistoryResponseDTO();
-            latestMessageHistoryResponseDTO.setMessageId(message.getMessageId());
-            latestMessageHistoryResponseDTO.setRead(message.isRead());
-            latestMessageHistoryResponseDTO.setSentAt(message.getSentAt());
-            latestMessageHistoryResponseDTO.setContent(message.getContent());
-            latestMessageHistoryResponseDTO.setMessageSenderId(message.getMessageSender().getUserId());
+            combinedMap.put(user.getUserId(), MessageUtils.createMessageHistoryResponseFromUserAndMessage(user, message));
+        });
 
-            messageHistoryResponseDTO.setLatestMessage(latestMessageHistoryResponseDTO);
-            return messageHistoryResponseDTO;
-
-        }).collect(Collectors.toList());
-
-        Map<Long, MessageHistoryResponseDTO> combinedMap = new HashMap<>();
-
-        for (MessageHistoryResponseDTO dto : messageHistoryResponseDTOS) {
-            combinedMap.put(dto.getPartnerId(), dto);
-        }
-
-        for (MessageHistoryResponseDTO dto : messageHistoryResponseDTOS1) {
-            combinedMap.put(dto.getPartnerId(), dto);
-        }
-        List<MessageHistoryResponseDTO> history = new ArrayList<>(combinedMap.values());
-
-        return history.stream()
-                .sorted(Comparator.comparing(dto -> {
-                    if (dto.getLatestMessage() != null) {
-                        return dto.getLatestMessage().getSentAt();
-                    }
-                    return LocalDateTime.MIN;
-                }, Comparator.reverseOrder()))
+        return combinedMap.values().stream()
+                .sorted(Comparator.comparing(dto -> Optional.ofNullable(dto.getLatestMessage())
+                        .map(MessageHistoryResponseDto.LatestMessageHistoryResponseDTO::getSentAt)
+                        .orElse(LocalDateTime.MIN), Comparator.reverseOrder()))
                 .collect(Collectors.toList());
     }
-
-
 }
 
 

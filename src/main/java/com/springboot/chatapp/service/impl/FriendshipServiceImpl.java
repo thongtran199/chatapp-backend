@@ -1,37 +1,38 @@
 package com.springboot.chatapp.service.impl;
 
-import com.springboot.chatapp.domain.dto.user.request.FriendshipRequestDTO;
-import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.FriendshipFoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.UserResponseDTO;
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.domain.enumerate.FriendshipStatus;
-import com.springboot.chatapp.exception.FriendshipStatusNotIsPendingException;
-import com.springboot.chatapp.exception.ResourceNotFoundException;
+import com.springboot.chatapp.model.dto.friendship.FriendshipRequestDto;
+import com.springboot.chatapp.model.entity.Friendship;
+import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.model.enums.FriendshipStatus;
+import com.springboot.chatapp.model.exception.ChatAppAPIException;
+import com.springboot.chatapp.model.exception.ResourceNotFoundException;
 import com.springboot.chatapp.repository.FriendshipRepository;
 import com.springboot.chatapp.service.FriendshipService;
 import com.springboot.chatapp.service.UserService;
-import com.springboot.chatapp.utils.FriendshipUtils;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class FriendshipServiceImpl implements FriendshipService {
 
-    @Autowired
-    private FriendshipRepository friendshipRepository;
-    @Autowired
-    private UserService userService;
+    private final FriendshipRepository friendshipRepository;
+    private final UserService userService;
+
+    public FriendshipServiceImpl(
+            FriendshipRepository friendshipRepository,
+            UserService userService) {
+
+        this.friendshipRepository = friendshipRepository;
+        this.userService = userService;
+    }
 
     @Override
     @Transactional
-    public Friendship sendFriendRequest(FriendshipRequestDTO friendshipRequestDTO) {
+    public Friendship sendFriendRequest(FriendshipRequestDto friendshipRequestDTO) {
         Friendship friendship = new Friendship();
         User requester = userService.findById(friendshipRequestDTO.getRequesterId());
         User requestedUser = userService.findById(friendshipRequestDTO.getRequestedUserId());
@@ -56,10 +57,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Transactional
     public void revokeFriendRequest(Long friendshipId) {
         Friendship friendship = findById(friendshipId);
-        if(friendship.getStatus() != FriendshipStatus.PENDING)
-        {
-            throw new FriendshipStatusNotIsPendingException(friendshipId, friendship.getStatus());
-        }
+        throwExceptionIfFriendshipIsNotPending(friendship);
         friendshipRepository.revokeFriendRequest(friendshipId);
     }
 
@@ -67,10 +65,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Transactional
     public void acceptFriendRequest(Long friendshipId) {
         Friendship friendship = findById(friendshipId);
-        if(friendship.getStatus() != FriendshipStatus.PENDING)
-        {
-            throw new FriendshipStatusNotIsPendingException(friendshipId, friendship.getStatus());
-        }
+        throwExceptionIfFriendshipIsNotPending(friendship);
         friendshipRepository.acceptFriendRequest(friendshipId);
 
     }
@@ -79,10 +74,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Transactional
     public void declineFriendRequest(Long friendshipId) {
         Friendship friendship = findById(friendshipId);
-        if(friendship.getStatus() != FriendshipStatus.PENDING)
-        {
-            throw new FriendshipStatusNotIsPendingException(friendshipId, friendship.getStatus());
-        }
+        throwExceptionIfFriendshipIsNotPending(friendship);
         friendshipRepository.declineFriendRequest(friendshipId);
     }
 
@@ -105,5 +97,12 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Override
     public List<Friendship> findAcceptedFriendshipsByUserId(Long userId) {
         return friendshipRepository.findAcceptedFriendshipsByUserId(userId);
+    }
+
+    @Override
+    public void throwExceptionIfFriendshipIsNotPending(Friendship friendship) {
+        if(!FriendshipStatus.PENDING.equals(friendship.getStatus())) {
+            throw new ChatAppAPIException(HttpStatus.BAD_REQUEST, "This friendship is not pending.");
+        }
     }
 }

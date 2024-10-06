@@ -1,6 +1,6 @@
 package com.springboot.chatapp.repository;
 
-import com.springboot.chatapp.domain.entity.Message;
+import com.springboot.chatapp.model.entity.Message;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

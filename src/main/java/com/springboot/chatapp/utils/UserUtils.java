@@ -1,37 +1,42 @@
 package com.springboot.chatapp.utils;
 
-import com.springboot.chatapp.domain.dto.user.response.FoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.FriendshipFoundUserResponseDTO;
-import com.springboot.chatapp.domain.dto.user.response.UserProfileDTO;
-import com.springboot.chatapp.domain.entity.Friendship;
-import com.springboot.chatapp.domain.entity.User;
-import com.springboot.chatapp.service.FriendshipService;
-import lombok.AllArgsConstructor;
+import com.springboot.chatapp.model.dto.user.SearchedUserResponseDto;
+import com.springboot.chatapp.model.dto.user.UserProfileResponseDto;
+import com.springboot.chatapp.model.entity.Friendship;
+import com.springboot.chatapp.model.entity.User;
 import org.modelmapper.ModelMapper;
-import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 public class UserUtils {
     private static final ModelMapper modelMapper = new ModelMapper();
 
-    public static UserProfileDTO mapToUserProfile(User user) {
-        return modelMapper.map(user, UserProfileDTO.class);
+    public static UserProfileResponseDto mapToUserProfile(User user) {
+        return modelMapper.map(user, UserProfileResponseDto.class);
     }
 
-    public static FoundUserResponseDTO getFoundUserResponseDTOByUserAndFriendship(User user, Optional<Friendship> latestFriendship) {
-        FoundUserResponseDTO dto = new FoundUserResponseDTO();
+    public static SearchedUserResponseDto getSearchedUserResponseDTOByUserAndFriendship(User user,
+                                                                                        Optional<Friendship> latestFriendship) {
+        SearchedUserResponseDto dto = new SearchedUserResponseDto();
         dto.setUserId(user.getUserId());
         dto.setFullName(user.getFullName());
         dto.setUsername(user.getUsername());
         dto.setAvatarUrl(user.getAvatarUrl());
-        if (!latestFriendship.isEmpty()) {
-            FriendshipFoundUserResponseDTO friendshipFoundUserResponseDTO = FriendshipUtils.getFriendshipFoundUserResponseDTO(latestFriendship.get());
-            dto.setFriendshipFoundUserResponseDTO(friendshipFoundUserResponseDTO);
-        } else {
-            dto.setFriendshipFoundUserResponseDTO(null);
+        if(latestFriendship.isEmpty())
+        {
+            dto.setFriendshipSearchedUserResponseDto(null);
+            return dto;
         }
-        return dto;
+        Friendship friendship = latestFriendship.get();
+        SearchedUserResponseDto.FriendshipSearchedUserResponseDto friendshipSearchedUserResponseDto = dto.new FriendshipSearchedUserResponseDto();
 
+        friendshipSearchedUserResponseDto.setFriendshipId(friendship.getFriendshipId());
+        friendshipSearchedUserResponseDto.setFriendshipStatus(friendship.getStatus());
+        friendshipSearchedUserResponseDto.setRequesterId(friendship.getRequester().getUserId());
+        friendshipSearchedUserResponseDto.setRequestedUserId(friendship.getRequestedUser().getUserId());
+
+        dto.setFriendshipSearchedUserResponseDto(friendshipSearchedUserResponseDto);
+
+        return dto;
     }
 }

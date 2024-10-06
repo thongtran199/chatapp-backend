@@ -1,15 +1,13 @@
 package com.springboot.chatapp.service;
 
-import com.springboot.chatapp.domain.dto.user.request.MessageRequestDTO;
-import com.springboot.chatapp.domain.dto.user.response.MessageHistoryResponseDTO;
-import com.springboot.chatapp.domain.entity.Message;
-import org.springframework.data.repository.query.Param;
+import com.springboot.chatapp.model.dto.message.MessageRequestDto;
+import com.springboot.chatapp.model.dto.message.MessageHistoryResponseDto;
+import com.springboot.chatapp.model.entity.Message;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface MessageService {
-    Message save(MessageRequestDTO messageRequestDTO);
+    Message save(MessageRequestDto messageRequestDTO);
 
     Message findById(Long messageId);
 
@@ -21,7 +19,7 @@ public interface MessageService {
 
     List<Message> findLatestMessagesByUserId(Long userId);
 
-    List<MessageHistoryResponseDTO> getChatHistory(Long userId);
+    List<MessageHistoryResponseDto> getChatHistory(Long userId);
 
 }
 

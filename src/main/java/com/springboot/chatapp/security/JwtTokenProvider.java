@@ -1,6 +1,6 @@
 package com.springboot.chatapp.security;
 
-import com.springboot.chatapp.exception.ChatAppAPIException;
+import com.springboot.chatapp.model.exception.ChatAppAPIException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;

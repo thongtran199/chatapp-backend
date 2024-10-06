@@ -1,6 +1,6 @@
 package com.springboot.chatapp.repository;
 
-import com.springboot.chatapp.domain.entity.User;
+import com.springboot.chatapp.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

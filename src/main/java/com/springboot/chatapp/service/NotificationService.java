@@ -1,12 +1,12 @@
 package com.springboot.chatapp.service;
 
-import com.springboot.chatapp.payload.notification.NewNotificationDTO;
-import com.springboot.chatapp.domain.entity.Notification;
+import com.springboot.chatapp.model.dto.notification.NotificationRequestDto;
+import com.springboot.chatapp.model.entity.Notification;
 
 import java.util.List;
 
 public interface NotificationService {
-    Notification save(NewNotificationDTO newNotificationDTO);
+    Notification save(NotificationRequestDto notificationRequestDTO);
 
     Notification findById(Long notificationId);
 
