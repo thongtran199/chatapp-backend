@@ -15,4 +15,6 @@ public interface RoleService {
     List<Role> findAllRoles();
 
     boolean existsById(Long roleId);
+
+    void createRoleIfNotExists(String roleName);
 }

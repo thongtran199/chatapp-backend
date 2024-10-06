@@ -1,12 +1,13 @@
 package com.springboot.chatapp.model.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "roles")
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 public class Role {
 
     @Id

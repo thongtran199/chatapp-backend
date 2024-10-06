@@ -5,9 +5,11 @@ import com.springboot.chatapp.model.entity.Role;
 import com.springboot.chatapp.model.exception.ResourceNotFoundException;
 import com.springboot.chatapp.repository.RoleRepository;
 import com.springboot.chatapp.service.RoleService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -17,6 +19,22 @@ public class RoleServiceImpl implements RoleService {
 
     public RoleServiceImpl(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
+    }
+
+    @PostConstruct
+    public void initializeRoles() {
+        createRoleIfNotExists("ROLE_ADMIN");
+        createRoleIfNotExists("ROLE_USER");
+    }
+
+    @Override
+    public void createRoleIfNotExists(String roleName) {
+        Optional<Role> roleOptional = roleRepository.findByName(roleName);
+        if (roleOptional.isEmpty()) {
+            RoleRequestDto roleRequestDto = new RoleRequestDto();
+            roleRequestDto.setName(roleName);
+            saveRole(roleRequestDto);
+        }
     }
 
     @Override

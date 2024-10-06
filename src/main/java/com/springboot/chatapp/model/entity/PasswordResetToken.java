@@ -2,12 +2,12 @@ package com.springboot.chatapp.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "password_reset_tokens")
-@Data
-@NoArgsConstructor
+@Getter
+@Setter
 public class PasswordResetToken {
 
     @Id

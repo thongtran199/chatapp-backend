@@ -1,14 +1,14 @@
 package com.springboot.chatapp.model.entity;
 
-
 import com.springboot.chatapp.model.enums.FriendshipStatus;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "friendships")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Friendship {
 
