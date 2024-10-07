@@ -3,11 +3,15 @@ package com.springboot.chatapp.model.dto.friendship;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class FriendshipRequestDto {
     @NotNull(message = "Requester ID cannot be null")
     @Min(value = 1, message = "Requester ID must be a positive number")

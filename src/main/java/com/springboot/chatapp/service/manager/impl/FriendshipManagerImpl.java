@@ -46,7 +46,7 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
     @Override
     @Transactional
-    public void sendFriendRequestAndNotification(FriendshipRequestDto friendshipRequestDTO) throws JsonProcessingException {
+    public Friendship sendFriendRequestAndNotification(FriendshipRequestDto friendshipRequestDTO) throws JsonProcessingException {
         Optional<Friendship> friendshipOptional = friendshipService.findLatestFriendshipBetweenUsers(friendshipRequestDTO.getRequesterId(), friendshipRequestDTO.getRequestedUserId());
         if(friendshipOptional.isPresent() && ( friendshipOptional.get().getStatus().equals(FriendshipStatus.PENDING) || friendshipOptional.get().getStatus().equals(FriendshipStatus.ACCEPTED)))
         {
@@ -59,6 +59,8 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
         NewNotificationSentBySocketDto newNotificationSentBySocketDto = NotificationUtils.createNotificationSocketDTO(requester, notification, requester.getFullName());
         socketService.sendNotificationToUser(requestedUser.getUserId(), newNotificationSentBySocketDto);
+
+        return friendship;
     }
 
     @Override
@@ -72,6 +74,7 @@ public class FriendshipManagerImpl implements FriendshipManager {
 
         NewNotificationSentBySocketDto newNotificationSentBySocketDto = NotificationUtils.createNotificationSocketDTO(requestedUser, notification, requestedUser.getFullName());
         socketService.sendNotificationToUser(requester.getUserId(), newNotificationSentBySocketDto);
+
     }
 
     @Override

@@ -1,12 +1,15 @@
 package com.springboot.chatapp.model.dto.register;
 
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
-
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegisterRequestDto {
 
     @NotNull(message = "fullName cannot be null")

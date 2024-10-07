@@ -2,11 +2,15 @@ package com.springboot.chatapp.model.dto.login;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequestDto {
 
     @NotNull(message = "usernameOrEmail cannot be null")

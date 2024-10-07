@@ -2,6 +2,7 @@ package com.springboot.chatapp.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springboot.chatapp.model.dto.friendship.FriendshipRequestDto;
+import com.springboot.chatapp.model.dto.friendship.FriendshipResponseDto;
 import com.springboot.chatapp.model.dto.user.SearchedUserResponseDto;
 import com.springboot.chatapp.model.entity.Friendship;
 import com.springboot.chatapp.model.exception.ChatAppAPIException;
@@ -44,11 +45,11 @@ public class FriendshipController {
 
     @Operation(summary = "Send a friend request", description = "Sends a new friend request")
     @PostMapping("/send-friend-request")
-    public ResponseEntity<Void> sendFriendRequest(
+    public ResponseEntity<FriendshipResponseDto> sendFriendRequest(
             @Parameter(description = "Friendship Request DTO", required = true) @Valid @RequestBody FriendshipRequestDto friendshipRequestDTO) {
         try {
-            friendshipManager.sendFriendRequestAndNotification(friendshipRequestDTO);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Friendship friendship = friendshipManager.sendFriendRequestAndNotification(friendshipRequestDTO);
+            return new ResponseEntity<>(friendshipMapper.mapToResponseDTO(friendship), HttpStatus.CREATED);
         } catch (JsonProcessingException e) {
             throw new ChatAppAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't process JSON of NotificationSocketDTO");
         }

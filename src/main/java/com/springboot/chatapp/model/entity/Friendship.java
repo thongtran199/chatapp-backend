@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Table(name = "friendships")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Friendship {
 
     @Id

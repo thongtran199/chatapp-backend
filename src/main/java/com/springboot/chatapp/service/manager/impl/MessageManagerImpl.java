@@ -38,7 +38,7 @@ public class MessageManagerImpl implements MessageManager {
 
     @Override
     @Transactional
-    public void saveMessageAndNotification(MessageRequestDto messageRequestDTO) throws JsonProcessingException {
+    public Message saveMessageAndNotification(MessageRequestDto messageRequestDTO) throws JsonProcessingException {
         Message message = messageService.save(messageRequestDTO);
         User receiver = message.getMessageReceiver();
 
@@ -52,5 +52,7 @@ public class MessageManagerImpl implements MessageManager {
 
         NewNotificationSentBySocketDto newNotificationSentBySocketDto = NotificationUtils.createNotificationSocketDTO(sender, notification, messageRequestDTO.getContent());
         socketService.sendMessageToUser(receiver.getUserId(), newNotificationSentBySocketDto);
+
+        return message;
     }
 }

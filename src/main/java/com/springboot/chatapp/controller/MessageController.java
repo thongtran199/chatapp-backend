@@ -45,11 +45,11 @@ public class MessageController {
                     @ApiResponse(responseCode = "417", description = "Failed to process message due to JSON error")
             })
     @PostMapping("/send")
-    public ResponseEntity<Void> sendMessage(
+    public ResponseEntity<MessageResponseDto> sendMessage(
             @Parameter(description = "Message Request DTO", required = true) @Valid @RequestBody MessageRequestDto messageRequestDTO) {
         try {
-            messageManager.saveMessageAndNotification(messageRequestDTO);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Message message =  messageManager.saveMessageAndNotification(messageRequestDTO);
+            return new ResponseEntity<>(messageMapper.mapToResponseDTO(message), HttpStatus.CREATED);
         } catch (JsonProcessingException e) {
             throw new ChatAppAPIException(HttpStatus.EXPECTATION_FAILED, "Can't process JSON of NotificationSocketDTO");
         }
