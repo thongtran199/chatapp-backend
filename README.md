@@ -17,9 +17,9 @@
 5. MySQL runs with username "root" and password "root" on port 3307 on your machine.
 
 6. Register an account and start using it.
-7. 
+
 ## WebSocket Connection Addresses
-1. To connect to the WebSocket, use the following address:
+To connect to the WebSocket, use the following address:
 
     ``` bash
    ws://localhost:8080/ws-endpoint
