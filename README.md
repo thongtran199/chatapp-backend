@@ -21,9 +21,10 @@
 ## WebSocket Connection Addresses
 To connect to the WebSocket, use the following address:
 
-    ``` bash
-   ws://localhost:8080/ws-endpoint
-    ```
+``` bash
+ws://localhost:8080/ws-endpoint
+```
+    
 You can receive messages from the WebSocket through the following topics:
 
 - /topic/{your-topic}: Receive messages from specific topics.
