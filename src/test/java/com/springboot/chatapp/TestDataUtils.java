@@ -4,17 +4,25 @@ import com.springboot.chatapp.model.entity.*;
 import com.springboot.chatapp.model.enums.FriendshipStatus;
 import com.springboot.chatapp.model.enums.NotificationType;
 import org.aspectj.weaver.ast.Not;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.testcontainers.shaded.org.checkerframework.checker.units.qual.N;
 
 import java.time.LocalDateTime;
 
+@Component
 public class TestDataUtils {
     public static User createUser(String username, String email, String fullName) {
+        ApplicationContext context = new AnnotationConfigApplicationContext(SpringBootChatAppRestApiApplication.class);
+        PasswordEncoder passwordEncoder = context.getBean(PasswordEncoder.class);
         User user = new User();
         user.setUsername(username);
-        user.setPasswordHash("abc");
         user.setFullName(fullName);
         user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode("Matkhaunayratmanh123@"));
         return user;
     }
 

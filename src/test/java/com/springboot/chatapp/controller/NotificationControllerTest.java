@@ -5,8 +5,10 @@ import com.springboot.chatapp.model.dto.notification.NotificationResponseDto;
 import com.springboot.chatapp.model.dto.user.UserProfileResponseDto;
 import com.springboot.chatapp.model.entity.Notification;
 import com.springboot.chatapp.model.enums.NotificationType;
+import com.springboot.chatapp.repository.UserRepository;
 import com.springboot.chatapp.service.NotificationService;
 import com.springboot.chatapp.utils.mapper.impl.NotificationMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +37,10 @@ class NotificationControllerTest {
     private UserProfileResponseDto user;
     private String registeredEmail =  "notiemail" + UUID.randomUUID() + "@gmail.com";
     private String registeredUsername =  "notiusername" + UUID.randomUUID() + "@gmail.com";
-    private String registeredPassword = "Matkhaunayratmanh123@";
 
     @BeforeEach
     void setUp() {
-        user = registerUser(testRestTemplate, registeredUsername, registeredEmail, "Sender User 1", registeredPassword).getUser();
+        user = registerUser(testRestTemplate, registeredUsername, registeredEmail, "Sender User 1").getUser();
     }
 
     @Test
@@ -65,7 +66,7 @@ class NotificationControllerTest {
 
         Notification notification =  notificationService.save(notificationRequestDto);
 
-        String accessToken = getAccessToken(testRestTemplate, registeredEmail, registeredPassword);
+        String accessToken = getAccessToken(testRestTemplate, registeredEmail);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -91,7 +92,7 @@ class NotificationControllerTest {
 
         Notification notification =  notificationService.save(notificationRequestDto);
 
-        String accessToken = getAccessToken(testRestTemplate, registeredEmail, registeredPassword);
+        String accessToken = getAccessToken(testRestTemplate, registeredEmail);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
