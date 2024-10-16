@@ -149,7 +149,6 @@ public class UserController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized")
             })
     @GetMapping("/get-me")
-    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserResponseDto> getMeByJwt() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {

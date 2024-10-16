@@ -1,15 +1,20 @@
 package com.springboot.chatapp.controller;
 
+import com.springboot.chatapp.AbstractTestcontainersTest;
 import com.springboot.chatapp.TestDataUtils;
+import com.springboot.chatapp.model.dto.register.RegisterResponseDto;
 import com.springboot.chatapp.model.dto.user.SearchedUserResponseDto;
 import com.springboot.chatapp.model.dto.user.UserResponseDto;
 import com.springboot.chatapp.model.dto.user.UserProfileResponseDto;
 import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.repository.UserRepository;
 import com.springboot.chatapp.service.UserService;
 import com.springboot.chatapp.utils.mapper.impl.UserMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,36 +29,26 @@ import static com.springboot.chatapp.controller.AuthControllerTest.registerUser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class UserControllerTest {
+class UserControllerTest extends AbstractTestcontainersTest {
 
     private static final String API_USER_PATH = "/api/user";
 
     @Autowired
     private TestRestTemplate testRestTemplate;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UserMapper userMapper;
-
     private UserProfileResponseDto testUser;
-    private String registeredEmail2 = "test2" + UUID.randomUUID() + "@gmail.com";
-    private String registeredUsername2 = "username2" + UUID.randomUUID();
-
-    private String registeredPassword = "Matkhaunayratmanh123@";
-
-
+    private String email = "email" + UUID.randomUUID() + "@gmail.com";
+    private String username = "username" + UUID.randomUUID();
 
     @BeforeEach
     void setUp() {
-        testUser =  registerUser(testRestTemplate, registeredUsername2, registeredEmail2, "Tran Van Thong", registeredPassword).getUser();
+        testUser = registerUser(testRestTemplate, username, email,"Tran Van Thong").getUser();
     }
 
     @Test
     void getUserByUsername() {
         ResponseEntity<UserResponseDto> response = testRestTemplate.getForEntity(
-                API_USER_PATH + "/username/" + testUser.getUsername(),
+                API_USER_PATH + "/username/" + username,
                 UserResponseDto.class
         );
 
@@ -65,13 +60,13 @@ class UserControllerTest {
     @Test
     void getUserByEmail() {
         ResponseEntity<UserResponseDto> response = testRestTemplate.getForEntity(
-                API_USER_PATH + "/email/" + testUser.getEmail(),
+                API_USER_PATH + "/email/" + email,
                 UserResponseDto.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(response.getBody().getEmail()).isEqualTo(email);
     }
 
     @Test
@@ -135,7 +130,7 @@ class UserControllerTest {
 
     @Test
     void getMeByJwt() {
-        String accessToken = getAccessToken(testRestTemplate, registeredEmail2, registeredPassword );
+        String accessToken = getAccessToken(testRestTemplate, email );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);

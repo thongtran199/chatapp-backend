@@ -6,6 +6,8 @@ import com.springboot.chatapp.model.dto.login.LoginResponseDto;
 import com.springboot.chatapp.model.dto.register.RegisterRequestDto;
 import com.springboot.chatapp.model.dto.register.RegisterResponseDto;
 import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +29,9 @@ class AuthControllerTest extends AbstractTestcontainersTest {
 
     @Autowired
     TestRestTemplate testRestTemplate;
-    private String registeredEmail1 = "test1" + UUID.randomUUID() + "@gmail.com";
-    private String registeredUsername1 = "username1" + UUID.randomUUID();
+
+    private String registeredEmail1 = "email" + UUID.randomUUID() + "@gmail.com";
+    private String registeredUsername1 = "username" + UUID.randomUUID();
 
     private String registeredPassword = "Matkhaunayratmanh123@";
 
@@ -51,7 +54,6 @@ class AuthControllerTest extends AbstractTestcontainersTest {
         assertThat(registerResponse.getBody()).isNotNull();
         assertThat(registerResponse.getBody().getUser().getUserId()).isNotNull();
     }
-
     @Test
     void login() {
         LoginRequestDto loginRequest = new LoginRequestDto(registeredEmail1, registeredPassword);
@@ -67,8 +69,9 @@ class AuthControllerTest extends AbstractTestcontainersTest {
         assertThat(loginResponse.getBody().getAccessToken()).isNotBlank();
     }
 
-    public static String getAccessToken(TestRestTemplate testRestTemplate, String registeredEmail, String registeredPassword) {
-        LoginRequestDto loginRequest = new LoginRequestDto(registeredEmail, registeredPassword);
+
+    public static String getAccessToken(TestRestTemplate testRestTemplate, String registeredEmail) {
+        LoginRequestDto loginRequest = new LoginRequestDto(registeredEmail, "Matkhaunayratmanh123@");
         ResponseEntity<LoginResponseDto> loginResponse = testRestTemplate.postForEntity(
                 API_AUTH_PATH + "/login",
                 loginRequest,
@@ -79,8 +82,8 @@ class AuthControllerTest extends AbstractTestcontainersTest {
         return loginResponse.getBody().getAccessToken();
     }
 
-    public static RegisterResponseDto registerUser(TestRestTemplate restTemplate, String username, String email, String fullName, String password) {
-        RegisterRequestDto registerRequest = new RegisterRequestDto(fullName, username, email, password);
+    public static RegisterResponseDto registerUser(TestRestTemplate restTemplate, String username, String email, String fullName) {
+        RegisterRequestDto registerRequest = new RegisterRequestDto(fullName, username, email, "Matkhaunayratmanh123@");
         ResponseEntity<RegisterResponseDto> registerResponse = restTemplate.postForEntity(
                 API_AUTH_PATH + "/register",
                 registerRequest,

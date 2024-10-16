@@ -3,12 +3,15 @@ package com.springboot.chatapp.controller;
 import com.springboot.chatapp.TestDataUtils;
 import com.springboot.chatapp.model.dto.friendship.FriendshipRequestDto;
 import com.springboot.chatapp.model.dto.friendship.FriendshipResponseDto;
+import com.springboot.chatapp.model.dto.register.RegisterResponseDto;
 import com.springboot.chatapp.model.dto.user.SearchedUserResponseDto;
 import com.springboot.chatapp.model.dto.user.UserProfileResponseDto;
 import com.springboot.chatapp.model.entity.Friendship;
 import com.springboot.chatapp.model.entity.User;
+import com.springboot.chatapp.repository.UserRepository;
 import com.springboot.chatapp.service.FriendshipService;
 import com.springboot.chatapp.service.UserService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +36,6 @@ class FriendshipControllerTest {
     private TestRestTemplate testRestTemplate;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private FriendshipService friendshipService;
 
     private UserProfileResponseDto senderUser;
@@ -44,20 +44,19 @@ class FriendshipControllerTest {
     private String receiverUsername = "receiver" + UUID.randomUUID();
     private String senderEmail = "sender" + UUID.randomUUID() + "@gmail.com";
     private String receiverEmail = "receiver" + UUID.randomUUID() + "@gmail.com";
-    private String registeredPassword = "Matkhaunayratmanh123@";
 
     @BeforeEach
     void setUp() {
-        senderUser = registerUser(testRestTemplate, senderUsername, senderEmail, "Sender User", registeredPassword).getUser();
-        receiverUser = registerUser(testRestTemplate, receiverUsername, receiverEmail, "Receiver User", registeredPassword).getUser();
+        senderUser = registerUser(testRestTemplate, senderUsername, senderEmail, "Sender User").getUser();
+        receiverUser = registerUser(testRestTemplate, receiverUsername, receiverEmail, "Receiver User").getUser();
     }
 
     @Test
     void acceptFriendRequest() {
         FriendshipRequestDto friendshipRequestDto = new FriendshipRequestDto(receiverUser.getUserId(), senderUser.getUserId());
-        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto); // Create friendship here
+        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto);
 
-        String accessToken = getAccessToken(testRestTemplate, senderEmail, registeredPassword);
+        String accessToken = getAccessToken(testRestTemplate, senderEmail);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -66,7 +65,7 @@ class FriendshipControllerTest {
 
         ResponseEntity<Void> response = testRestTemplate.postForEntity(
                 API_FRIENDSHIP_PATH + "/accept/" + friendship.getFriendshipId(),
-                entity, // pass entity here instead of null
+                entity,
                 Void.class
         );
 
@@ -76,9 +75,9 @@ class FriendshipControllerTest {
     @Test
     void declineFriendRequest() {
         FriendshipRequestDto friendshipRequestDto = new FriendshipRequestDto(receiverUser.getUserId(), senderUser.getUserId());
-        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto); // Create friendship here
+        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto);
 
-        String accessToken = getAccessToken(testRestTemplate, senderEmail, registeredPassword);
+        String accessToken = getAccessToken(testRestTemplate, senderEmail);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -87,7 +86,7 @@ class FriendshipControllerTest {
 
         ResponseEntity<Void> declineResponse = testRestTemplate.postForEntity(
                 API_FRIENDSHIP_PATH + "/decline/" + friendship.getFriendshipId(),
-                entity, // pass entity here instead of null
+                entity,
                 Void.class
         );
 
@@ -97,9 +96,9 @@ class FriendshipControllerTest {
     @Test
     void revokeFriendRequest() {
         FriendshipRequestDto friendshipRequestDto = new FriendshipRequestDto(senderUser.getUserId(), receiverUser.getUserId());
-        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto); // Create friendship here
+        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto);
 
-        String accessToken = getAccessToken(testRestTemplate, senderEmail, registeredPassword);
+        String accessToken = getAccessToken(testRestTemplate, senderEmail);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -108,7 +107,7 @@ class FriendshipControllerTest {
 
         ResponseEntity<Void> revokeResponse = testRestTemplate.postForEntity(
                 API_FRIENDSHIP_PATH + "/revoke/" + friendship.getFriendshipId(),
-                entity, // pass entity here instead of null
+                entity,
                 Void.class
         );
 
@@ -118,10 +117,10 @@ class FriendshipControllerTest {
     @Test
     void unFriend() {
         FriendshipRequestDto friendshipRequestDto = new FriendshipRequestDto(senderUser.getUserId(), receiverUser.getUserId());
-        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto); // Create friendship here
-        friendshipService.acceptFriendRequest(friendship.getFriendshipId()); // Ensure the friendship is accepted
+        Friendship friendship = friendshipService.sendFriendRequest(friendshipRequestDto);
+        friendshipService.acceptFriendRequest(friendship.getFriendshipId());
 
-        String accessToken = getAccessToken(testRestTemplate, senderEmail, registeredPassword);
+        String accessToken = getAccessToken(testRestTemplate, senderEmail);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -156,7 +155,7 @@ class FriendshipControllerTest {
     @Test
     void getAllReceivedPendingFriendRequests() {
         FriendshipRequestDto friendshipRequestDto = new FriendshipRequestDto(receiverUser.getUserId(), senderUser.getUserId());
-        friendshipService.sendFriendRequest(friendshipRequestDto); // Create friendship here
+        friendshipService.sendFriendRequest(friendshipRequestDto);
 
         ResponseEntity<List<SearchedUserResponseDto>> response = testRestTemplate.exchange(
                 API_FRIENDSHIP_PATH + "/received/" + receiverUser.getUserId(),

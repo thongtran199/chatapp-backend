@@ -69,9 +69,9 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) ->
                         authorize.requestMatchers(HttpMethod.GET, "/api/user/get-me").hasRole("USER")
+                                .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                                 .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-resources/**","/swagger-ui.html", "/webjars/**").permitAll()
-                                 .requestMatchers("/api/auth/**").permitAll()
                                 .anyRequest().authenticated()
                 ).exceptionHandling( exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)

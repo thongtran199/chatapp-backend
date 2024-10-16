@@ -55,6 +55,7 @@ class RoleServiceTest {
         assertThat(savedRole.getName()).isEqualTo("ROLE_USER");
 
         verify(roleRepository).save(roleArgumentCaptor.capture());
+
         Role capturedRole = roleArgumentCaptor.getValue();
         assertThat(capturedRole.getName()).isEqualTo("ROLE_USER");
     }
